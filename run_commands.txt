@@ -1,0 +1,26 @@
+generate a singular png of a marker :
+
+python generate_aruco_tags.py --id \\ID NUMBER\\ --type \\TYPE\\ --output tags/
+
+---------------------------------------------------------------------------------------------------
+
+marker detection for images:
+
+python detect_aruco_images.py --image \\IMAGE PATH\\ --type \\TYPE\\
+
+
+marker detection for video:
+
+python detect_aruco_video.py \\TYPE\\ --camera False --video \\VIDEO PATH\\
+
+
+marker detection for live video:
+
+python detect_aruco_video.py --type \\TYPE\\ --camera True
+
+---------------------------------------------------------------------------------------------------
+
+
+
+
+
