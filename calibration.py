@@ -1,3 +1,8 @@
+'''
+Sample Usage:-
+python calibration.py --dir calibration_checkerboard/ --square_size 0.024
+'''
+
 import numpy as np
 import cv2
 import os
@@ -12,23 +17,18 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
     # Prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(8,6,0)
     objp = np.zeros((height*width, 3), np.float32)
     objp[:, :2] = np.mgrid[0:width, 0:height].T.reshape(-1, 2)
+
     objp = objp * square_size
 
     # Arrays to store object points and image points from all the images.
     objpoints = []  # 3D points in real world space
     imgpoints = []  # 2D points in image plane
 
-    images = [f for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
-    if not images:
-        raise ValueError(f"No images found in directory {dirpath}")
+
+    images = os.listdir(dirpath)
 
     for fname in images:
-        img_path = os.path.join(dirpath, fname)
-        img = cv2.imread(img_path)
-        if img is None:
-            print(f"Warning: Unable to read image {img_path}. Skipping...")
-            continue
-
+        img = cv2.imread(os.path.join(dirpath, fname))
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Find the chessboard corners
@@ -37,8 +37,11 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
         # If found, add object points, image points (after refining them)
         if ret:
             objpoints.append(objp)
+            
             corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
             imgpoints.append(corners2)
+
+            # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (width, height), corners2, ret)
 
             if visualize:
