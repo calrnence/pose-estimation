@@ -39,8 +39,10 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                          [-length/2, -length/2, 0]])
             
             # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
-            ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients)
-
+            ret, rvec, tvec= cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, None, None, False, cv2.SOLVEPNP_ITERATIVE)
+            # rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec)
+            print("rotation of {}:{}".format(ids,rvec))
+            print("translation of {}:{}".format(ids,tvec))
             # Draw a square around the markers
             cv2.aruco.drawDetectedMarkers(frame, corners) 
 

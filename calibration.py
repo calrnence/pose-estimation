@@ -1,6 +1,6 @@
 '''
 Sample Usage:-
-python calibration.py --dir calibration_checkerboard/ --square_size 0.024
+python calibration.py --dir calibration_checkerboard/ --visualize
 '''
 
 import numpy as np
@@ -8,7 +8,7 @@ import cv2
 import os
 import argparse
 
-def calibrate(dirpath, square_size, width, height, visualize=False):
+def calibrate(dirpath, square_size, width, height, visualize):
     """ Apply camera calibration operation for images in the given directory path. """
 
     # Termination criteria
@@ -23,7 +23,6 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
     # Arrays to store object points and image points from all the images.
     objpoints = []  # 3D points in real world space
     imgpoints = []  # 2D points in image plane
-
 
     images = os.listdir(dirpath)
 
@@ -56,6 +55,14 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
         raise ValueError("Not enough points to calibrate the camera. Check images.")
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+    
+    mean_error = 0
+    for i in range(len(objpoints)):
+        imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+        error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+        mean_error += error
+ 
+        print( "Total reprojection error (smaller is better): {}".format(mean_error/len(objpoints)) )    
 
     return ret, mtx, dist, rvecs, tvecs
 
@@ -69,9 +76,9 @@ def parse_arguments():
     """ Parse command line arguments. """
     ap = argparse.ArgumentParser()
     ap.add_argument("-d", "--dir", required=True, help="Path to folder containing checkerboard images for calibration")
-    ap.add_argument("-w", "--width", type=int, default=8, help="Width of checkerboard (default=9)")
-    ap.add_argument("-t", "--height", type=int, default=6, help="Height of checkerboard (default=6)")
-    ap.add_argument("-s", "--square_size", type=float, default=0.031, help="Length of one edge (in meters)")
+    ap.add_argument("-w", "--width", type=int, default=7, help="Number of internal corners along the width of the board(default=7)")
+    ap.add_argument("-t", "--height", type=int, default=5, help="Number of internal corners along the height of the board (default=5)")
+    ap.add_argument("-s", "--square_size", type=float, default=0.031, help="Length of one whole square in meters (default=0.031)")
     ap.add_argument("-v", "--visualize", action='store_true', help="To visualize each checkerboard image")
     return ap.parse_args()
 
