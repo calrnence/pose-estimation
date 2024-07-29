@@ -12,6 +12,7 @@ import argparse
 import time
 
 
+
 def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length):
 
     '''
@@ -40,16 +41,15 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             
             # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
             ret, rvec, tvec= cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, None, None, False, cv2.SOLVEPNP_ITERATIVE)
-            # rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec)
-            print("rotation of {}:{}".format(ids,rvec))
-            print("translation of {}:{}".format(ids,tvec))
+            rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec)
+
             # Draw a square around the markers
             cv2.aruco.drawDetectedMarkers(frame, corners) 
 
             # Draw Axis
             cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)  
 
-    return frame
+    return frame, rvec, tvec
 
 if __name__ == '__main__':
 
@@ -78,16 +78,25 @@ if __name__ == '__main__':
 
     while True:
         ret, frame = video.read()
-
+        
         if not ret:
             break
         
-        output = pose_estimation(frame, aruco_dict_type, k, d, marker_length)
+        rotation = []
+        translation = []
 
+        output, rvec, tvec = pose_estimation(frame, aruco_dict_type, k, d, marker_length)
+
+        rotation.append(rvec)
+        translation.append(tvec)
         cv2.imshow('Estimated Pose', output)
 
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
+            np.array(rotation)
+            np.array(translation)
+            np.save('rotational_vectors', rotation)
+            np.save('translational_vectors', translation)
             break
 
     video.release()
