@@ -1,0 +1,4 @@
+import os
+
+if not os.path.exists('E:\pose-estimation\calibration_checkerboard'):
+    raise FileNotFoundError(f"The directory E:\pose-estimation\calibration_checkerboard\ does not exist.")

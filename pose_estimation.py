@@ -12,7 +12,7 @@ import argparse
 import time
 
 
-def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
+def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length):
 
     '''
     frame - Frame from the video stream
@@ -28,15 +28,19 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
     parameters = cv2.aruco.DetectorParameters()
     detector = cv2.aruco.ArucoDetector(cv2.aruco_dict, parameters)
 
-
     corners, ids, rejected_img_points = detector.detectMarkers(gray)
 
         # If markers are detected
     if len(corners) > 0:
         for i in range(0, len(ids)):
+            objPoints = np.array([[-length/2, length/2,0],
+                         [length/2, length/2, 0],
+                         [length/2, -length/2, 0],
+                         [-length/2, -length/2, 0]])
+            
             # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
-            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,
-                                                                       distortion_coefficients)
+            ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients)
+
             # Draw a square around the markers
             cv2.aruco.drawDetectedMarkers(frame, corners) 
 
@@ -51,6 +55,7 @@ if __name__ == '__main__':
     ap.add_argument("-k", "--K_Matrix", required=True, help="Path to calibration matrix (numpy file)")
     ap.add_argument("-d", "--D_Coeff", required=True, help="Path to distortion coefficients (numpy file)")
     ap.add_argument("-t", "--type", type=str, default="DICT_ARUCO_ORIGINAL", help="Type of ArUCo tag to detect")
+    ap.add_argument("-l", "--length", type=float, default=0.015, help="Length of detected marker in meters")
     args = vars(ap.parse_args())
 
     
@@ -61,6 +66,7 @@ if __name__ == '__main__':
     aruco_dict_type = ARUCO_DICT[args["type"]]
     calibration_matrix_path = args["K_Matrix"]
     distortion_coefficients_path = args["D_Coeff"]
+    marker_length = args["length"]
     
     k = np.load(calibration_matrix_path)
     d = np.load(distortion_coefficients_path)
@@ -74,7 +80,7 @@ if __name__ == '__main__':
         if not ret:
             break
         
-        output = pose_estimation(frame, aruco_dict_type, k, d)
+        output = pose_estimation(frame, aruco_dict_type, k, d, marker_length)
 
         cv2.imshow('Estimated Pose', output)
 
