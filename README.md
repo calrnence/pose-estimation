@@ -1,4 +1,4 @@
-# ArUCo-Markers-Pose-Estimation-Generation-Python
+# ArUCo-Markers-Pose-Estimation-Generation-Python (@GSNCodes)
 
 This repository contains all the code you need to generate an ArucoTag,
 detect ArucoTags in images and videos, and then use the detected tags
