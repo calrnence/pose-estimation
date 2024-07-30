@@ -11,8 +11,9 @@ import argparse
 import time
 import csv
 from datetime import datetime
+import h5py
 
-def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length):
+def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length, filename):
     '''
     frame - Frame from the video stream
     matrix_coefficients - Intrinsic matrix of the calibrated camera
@@ -40,18 +41,19 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                          [length/2, length/2, 0],
                          [length/2, -length/2, 0],
                          [-length/2, -length/2, 0]])
-        for i in range(0, len(ids)):
-            # Estimate pose of each marker and return the temporary values for rvec_ and tvec_---(different from those of camera coefficients)
-            ret, rvec_, tvec_ = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
-            if ret: # check if solvePnP was successful
-                rvec_, tvec_, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec_, tvec_) # pose refinement step, optional
-                if ret:
-                    rvec, tvec = rvec_, tvec_
-                    # Draw a square around the markers
-                    cv2.aruco.drawDetectedMarkers(frame, corners) 
+        with h5py.File(filename, 'a') as file:
+            for i in range(0, len(ids)):
+                # Estimate pose of each marker and return the temporary values for rvec_ and tvec_---(different from those of camera coefficients)
+                ret, rvec_, tvec_ = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
+                if ret: # check if solvePnP was successful
+                    rvec_, tvec_, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec_, tvec_) # pose refinement step, optional
+                    if ret:
+                        rvec, tvec = rvec_, tvec_
+                        # Draw a square around the markers
+                        cv2.aruco.drawDetectedMarkers(frame, corners) 
 
-                    # Draw axis on center of marker
-                    cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
+                        # Draw axis on center of marker
+                        cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
 
     return frame, rvec, tvec  
 
@@ -84,11 +86,12 @@ if __name__ == '__main__':
     video = cv2.VideoCapture(0)
     time.sleep(2.0)
     # initialize new csv file to store data
-    filename = datetime.now().strftime('transformations_%Y-%m-%d_%H-%M-%S.csv')
-    with open(filename, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['','', 'rotation', '', '', '', 'translation'])
-        writer.writerow(['timestamp','', 'yaw', 'pitch', 'roll', '', 'x', 'y', 'z'])
+    filename = datetime.now().strftime('transformations_%Y-%m-%d_%H-%M-%S.hdf5')
+
+    # with open(filename, 'w', newline='') as file:
+    #     writer = csv.writer(file)
+    #     writer.writerow(['','', 'rotation', '', '', '', 'translation'])
+    #     writer.writerow(['timestamp','', 'yaw', 'pitch', 'roll', '', 'x', 'y', 'z'])
     # start stopwatch 
     start = time.perf_counter()
 
@@ -97,7 +100,7 @@ if __name__ == '__main__':
         if not ret:
             break
 
-        output, rvec, tvec = pose_estimation(frame, aruco_dict_type, k, d, marker_length)
+        output, rvec, tvec = pose_estimation(frame, aruco_dict_type, k, d, marker_length, filename)
 
         # saves data only if solvePnP was successful
         if rvec is not None and tvec is not None:
