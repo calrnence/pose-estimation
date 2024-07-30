@@ -6,7 +6,7 @@ python pose_estimation.py --K_Matrix calibration_matrix.npy --D_Coeff distortion
 import numpy as np
 import cv2
 import sys
-from utils import ARUCO_DICT
+from utils import ARUCO_DICT, displayid
 import argparse
 import time
 import csv
@@ -40,11 +40,11 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                          [length/2, length/2, 0],
                          [length/2, -length/2, 0],
                          [-length/2, -length/2, 0]])
-        for corner in corners:
+        for i in range(0, len(ids)):
             # Estimate pose of each marker and return the temporary values for rvec_ and tvec_---(different from those of camera coefficients)
-            ret, rvec_, tvec_ = cv2.solvePnP(objPoints, corner, matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
+            ret, rvec_, tvec_ = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
             if ret: # check if solvePnP was successful
-                rvec_, tvec_, = cv2.solvePnPRefineLM(objPoints, corner, matrix_coefficients, distortion_coefficients, rvec_, tvec_) # pose refinement step, optional
+                rvec_, tvec_, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec_, tvec_) # pose refinement step, optional
                 if ret:
                     rvec, tvec = rvec_, tvec_
                     # Draw a square around the markers
@@ -54,26 +54,6 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                     cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
 
     return frame, rvec, tvec  
-
-# from utils.py 
-def displayid(corners, ids, rejected, image):
-    if corners:        
-        ids = ids.flatten()
-        # loop over the detected ArUCo corners
-        for (markerCorner, markerID) in zip(corners, ids):
-            # extract the marker corners (which are always returned in
-            # top-left, top-right, bottom-right, and bottom-left order)
-            corners = markerCorner.reshape((4, 2))
-            (topLeft, topRight, bottomRight, bottomLeft) = corners
-            # convert each of the (x, y)-coordinate pairs to integers
-            topRight = (int(topRight[0]), int(topRight[1]))
-            bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-            bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-            topLeft = (int(topLeft[0]), int(topLeft[1]))
-
-            cv2.putText(image, str(markerID),(topLeft[0], topLeft[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-    return image
 
 # appends timestamp, rotation and translation to pre-existing csv file
 def save(filename, timestamp, rvec, tvec):
