@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -50,8 +51,7 @@ def aruco_display(corners, ids, rejected, image):
 			cY = int((topLeft[1] + bottomRight[1]) / 2.0)
 			cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
 			# draw the ArUco marker ID on the image
-			cv2.putText(image, str(markerID),(topLeft[0], topLeft[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-				0.5, (0, 255, 0), 2)
+		
 			print("[Inference] ArUco marker ID: {}".format(markerID))
 			# show the output image
 	return image
@@ -75,3 +75,36 @@ def displayid(corners, ids, rejected, image):
             cv2.putText(image, str(markerID),(topLeft[0], topLeft[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
     return image
+
+def setup_hdf5(file, id):
+    # create group for marker
+    group = file.create_group(f'marker_{id}')
+    # create dataset for each parameter
+    group.create_dataset('yaw', shape=(0, 2), maxshape = (None,2))
+    group.create_dataset('pitch', shape=(0, 2), maxshape = (None,2))
+    group.create_dataset('roll', shape=(0, 2), maxshape = (None,2))
+    group.create_dataset('x', shape=(0, 2), maxshape = (None,2))
+    group.create_dataset('y', shape=(0, 2), maxshape = (None,2))
+    group.create_dataset('z', shape=(0, 2), maxshape = (None,2))
+
+
+def save_data(group, timestamp, rvec, tvec):
+    rvec = rvec.flatten()
+    tvec = tvec.flatten()
+
+    # reshape dataset
+    group['yaw'].resize((group['yaw'].shape[0] + 1), axis=0)
+    group['pitch'].resize((group['pitch'].shape[0] + 1), axis=0)
+    group['roll'].resize((group['roll'].shape[0] + 1), axis=0)
+    group['x'].resize((group['x'].shape[0] + 1), axis=0)
+    group['y'].resize((group['y'].shape[0] + 1), axis=0)
+    group['z'].resize((group['z'].shape[0] + 1), axis=0)
+	
+	# append new data
+	
+    group['yaw'][-1] = [timestamp, rvec[0]]
+    group['pitch'][-1] = [timestamp, rvec[1]]
+    group['roll'][-1] = [timestamp, rvec[2]]
+    group['x'][-1] = [timestamp, tvec[0]]
+    group['y'][-1] = [timestamp, tvec[1]]
+    group['z'][-1] = [timestamp, tvec[2]]
