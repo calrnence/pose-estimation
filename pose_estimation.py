@@ -44,6 +44,7 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
         with h5py.File(filename,'a') as file:
             
             for i in range(0, len(ids)):
+                # if a group for the marker doesnt exist, create new group
                 if f'marker_{ids[i]}' not in file:
                     setup_hdf5(file, ids[i])
                 group = file[f'marker_{ids[i]}']
@@ -51,8 +52,7 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                 ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
                 if ret:
                     rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec) # pose refinement step, optional
-                    
-                    # if a group for the marker doesnt exist, create new group
+                
                     save_data(group, timestamp, rvec, tvec)
                     # Draw a square around the markers
                     cv2.aruco.drawDetectedMarkers(frame, corners) 

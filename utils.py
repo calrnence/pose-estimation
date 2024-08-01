@@ -78,7 +78,7 @@ def displayid(corners, ids, rejected, image):
 
 def setup_hdf5(file, id):
     # create group for marker
-    group = file.create_group(f'marker_{id}')
+    group = file.create_group(f'marker_{id}', track_order=True)
     # create dataset for each parameter
     group.create_dataset('yaw', shape=(0, 2), maxshape = (None,2))
     group.create_dataset('pitch', shape=(0, 2), maxshape = (None,2))
@@ -101,7 +101,6 @@ def save_data(group, timestamp, rvec, tvec):
     group['z'].resize((group['z'].shape[0] + 1), axis=0)
 	
 	# append new data
-	
     group['yaw'][-1] = [timestamp, rvec[0]]
     group['pitch'][-1] = [timestamp, rvec[1]]
     group['roll'][-1] = [timestamp, rvec[2]]

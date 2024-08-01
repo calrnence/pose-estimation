@@ -1,25 +1,72 @@
-generate a singular png of a marker :
 
-python generate_aruco_tags.py --id \\ID NUMBER\\ --type \\TYPE\\ --output tags/
-
----------------------------------------------------------------------------------------------------
-
-marker detection for images:
-
-python detect_aruco_images.py --image \\IMAGE PATH\\ --type \\TYPE\\
-
-
-marker detection for video:
-
-python detect_aruco_video.py \\TYPE\\ --camera False --video \\VIDEO PATH\\
-
-
-marker detection for live video:
-
-python detect_aruco_video.py --type \\TYPE\\ --camera True
+USE --help OR -h AS AN ARGUMENT FOR ANY CODE WHEN RUNNING TO SEE ALL POSSIBLE ARGUMENTS
 
 ---------------------------------------------------------------------------------------------------
 
+GENERATE A SINGLE PNG OF A MARKER :
+
+python generate_aruco_tags.py --id {ID NUMBER} --type {TYPE} --output tags/
+
+PARAMETERS:
+-o, --output | PATH TO OUTPUT FOLDER 
+-t, --type | TYPE OF ARUCO MARKER TO GENERATE (INTEGER)
+-i, --id | ID OF ARUCO TAG TO GENERATE (STRING)
+-s, --size | SIZE OF ARUCO TAG TO GENERATE (INTEGER, MEASURED IN PIXELS, WILL BE A SQUARE)
+
+---------------------------------------------------------------------------------------------------
+
+MARKER DETECTION FOR IMAGES:
+
+python detect_aruco_images.py --image {IMAGE PATH} --type {TYPE OF ARUCO TAG}
+
+PARAMETERS:
+-i, --image | PATH TO INPUT IMAGE
+-t, --type | TYPE OF ARUCO TAG TO DETECT, SEE UTILS.PY FOR DICTIONARY 
+
+---------------------------------------------------------------------------------------------------
+
+MARKER DETECTION FOR PRE-RECORDED VIDEOS OR LIVE CAMERA FEED:
+
+python detect_aruco_video.py --type {TYPE OF ARUCO TAG} --camera False --video {VIDEO PATH}
+
+PARAMETERS:
+-i, --camera | BOOLEAN TO CHECK FOR LIVE CAMERA FEED, TRUE IF LIVE CAMERA FEED
+-v, --video, | PATH TO VIDEO FILE IF APPLICABLE
+-t, --type | TYPE OF ARUCO TAG TO DETECT, SEE UTILS.PY FOR DICTIONARY 
+
+---------------------------------------------------------------------------------------------------
+
+FOR CALIBRATION
+
+python calibration.py --dir {DIRECTORY WITH CALIBRATION IMAGES} --visualize
+
+-d, --dir | PATH TO FOLDER WITH CALIBRATION IMAGES
+-w, --width | NUMBER OF INTERNAL CORNERS ALONG WIDTH OF CHECKERBOARD
+-t, --height | NUMBER OF INTERNAL CORNERS ALONG HEIGHT OF CHECKERBOARD
+-s, square_size | LENGTH OF ONE WHOLE CHECKERBOARD SQUARE (METERS)
+-v, --visualize | VISUALIZE CALIBRATION FROM EACH IMAGE
+
+---------------------------------------------------------------------------------------------------
+
+FOR POSE ESTIMATION
+
+python pose_estimation.py --K_Matrix {PATH TO CAMERA MATRIX NUMPY FILE} --D_Coeff {PATH TO DISTORTION MATRIX NUMPY FILE} --type {TYPE OF ARUCO TAG}
+
+PARAMETERS:
+
+-k, --K_Matrix | PATH TO CAMERA MATRIX NUMPY FILE
+-d, --D_Coeff |  PATH TO DISTORTION MATRIX NUMPY FILE
+-t, --type | TYPE OF ARUCO TAG TO DETECT, SEE UTILS.PY FOR DICTIONARY 
+-l, --length | LENGTH OF ONE ARUCO TAG/MARKER
+
+---------------------------------------------------------------------------------------------------
+
+FOR VISUALIZING THE POSE DATA 
+
+python visualization.py --dir {PATH TO HDF5 FILE} --mrk {MARKER ID}
+
+-d, --dir | PATH TO HDF5 FILE
+-m, --mrk | ID OF MARKER YOU WANT TO SEE POSE DATA OF 
 
 
 
