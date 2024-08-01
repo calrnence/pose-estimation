@@ -76,9 +76,9 @@ def displayid(corners, ids, rejected, image):
                     0.5, (0, 255, 0), 2)
     return image
 
-def setup_hdf5(file, id):
+def setup_hdf5(file, ids):
     # create group for marker
-    group = file.create_group(f'marker_{id}', track_order=True)
+    group = file.create_group(f'marker_{ids}', track_order=True)
     # create dataset for each parameter
     group.create_dataset('yaw', shape=(0, 2), maxshape = (None,2))
     group.create_dataset('pitch', shape=(0, 2), maxshape = (None,2))

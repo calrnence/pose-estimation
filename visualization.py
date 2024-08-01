@@ -27,7 +27,6 @@ if __name__ == '__main__':
         
         figure, axes = plt.subplots(2, 3, num=f'marker {marker_id} data')
         axes = axes.flatten()
-        print(group.keys())
 
         for i, key in enumerate(group.keys()):
             data = group[key][:]

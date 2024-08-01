@@ -83,16 +83,18 @@ if __name__ == '__main__':
 
     video = cv2.VideoCapture(0)
     time.sleep(2.0)
-    # initialize stopwatch new csv file to store data 
+    # initialize stopwatch, stopwatch is from when video shows up on screen 
     filename = datetime.now().strftime('transformations_%Y-%m-%d_%H-%M-%S.hdf5')
     start = time.perf_counter()
-
+    
     while True:
         ret, frame = video.read()
         if not ret:
             break
         # stop stopwatch
-        timestamp = time.perf_counter() - start
+        end = time.perf_counter()
+        timestamp = end - start
+
         output = pose_estimation(frame, aruco_dict_type, k, d, marker_length, filename, timestamp)
 
         cv2.imshow('Estimated Pose', output)
