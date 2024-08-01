@@ -20,6 +20,7 @@ if __name__ == '__main__':
 
     with h5py.File(hdf5_path, 'r') as file:
         group = file[f"marker_{marker_id}"]
+        # check if marker was detected
         if f"marker_{marker_id}" not in file.keys():
             print(f"Marker {marker_id} was not found.")
             sys.exit(0)
