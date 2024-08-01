@@ -14,10 +14,10 @@ def export(filename):
             for group in file.keys():
                 marker = file[group]
                 dfs = {}
-
+                # retrieve all data 
                 for dataset in marker.keys():
                     dfs[dataset] = pd.DataFrame(marker[dataset][:,1], columns = [dataset], index = marker[dataset][:,0])
-
+                # merge dataframes with the timestamps as a common index
                 merged_df = pd.concat(dfs.values(), axis=1)
                 merged_df.index.name = 'time elapsed'
                 merged_df.to_excel(writer, sheet_name=group)

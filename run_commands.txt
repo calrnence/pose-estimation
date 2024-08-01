@@ -82,6 +82,12 @@ PARAMETERS
 -d, --dir | (REQUIRED)  PATH TO HDF5 FILE
 -m, --mrk | (REQUIRED)  ID OF MARKER YOU WANT TO SEE POSE DATA OF 
 
+---------------------------------------------------------------------------------------------------
 
+FOR READING THE HDF5 FILE INTO AN EXCEL SHEET
 
+python hdf5_to_sheet.py --dir {STRING}
 
+EXAMPLE: python hdf5_to_sheet.py --dir transformations_2024-08-01_11-40-41.hdf5
+
+ -d, --dir | (REQUIRED) PATH TO HDF5 FILE
