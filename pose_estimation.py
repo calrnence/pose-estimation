@@ -10,10 +10,11 @@ from utils import ARUCO_DICT, displayid, save_data, setup_hdf5
 import argparse
 import time
 from datetime import datetime
-import h5py
+import csv
+import pandas as pd
 
 
-def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length, filename, timestamp):
+def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, length, marker_data, timestamp):
     '''
     frame - Frame from the video stream
     matrix_coefficients - Intrinsic matrix of the calibrated camera
@@ -41,25 +42,27 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
                          [length/2, length/2, 0],
                          [length/2, -length/2, 0],
                          [-length/2, -length/2, 0]])
-        with h5py.File(filename,'a') as file:
-            
-            for i in range(0, len(ids)):
-                # if a group for the marker doesnt exist, create new group
-                if f'marker_{ids[i]}' not in file:
-                    setup_hdf5(file, ids[i])
-                group = file[f'marker_{ids[i]}']
-                # Estimate pose of each marker and return the temporary values for rvec_ and tvec_---(different from those of camera coefficients)
-                ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
-                if ret:
-                    rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec) # pose refinement step, optional
-                
-                    save_data(group, timestamp, rvec, tvec)
-                    # Draw a square around the markers
-                    cv2.aruco.drawDetectedMarkers(frame, corners) 
-                    # Draw axis on center of marker
-                    cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
+        for i in range(0, len(ids)):
+            marker_id = f"marker_{ids[i]}"
+            # Estimate pose of each marker and return the temporary values for rvec_ and tvec_---(different from those of camera coefficients)
+            ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
+            if ret:
+                rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec) # pose refinement step, optional
+                if marker_id not in marker_data.keys():
+                    marker_data[marker_id] = [timestamp, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2]]
+                else:
+                    marker_data[marker_id].append([timestamp, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2]])
+                # Draw a square around the markers
+                cv2.aruco.drawDetectedMarkers(frame, corners) 
+                # Draw axis on center of marker
+                cv2.drawFrameAxes(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)
 
-    return frame
+    return frame, marker_data
+
+def save_data(filename, marker_data):
+    dfs = {}
+    for marker in marker_data.keys():
+        merged_df = pd.concat(dfs.values(), axis=1)
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
@@ -84,18 +87,20 @@ if __name__ == '__main__':
     video = cv2.VideoCapture(0)
     time.sleep(2.0)
     # initialize stopwatch, stopwatch is from when video shows up on screen 
-    filename = datetime.now().strftime('transformations_%Y-%m-%d_%H-%M-%S.hdf5')
-    start = time.perf_counter()
+    filename = datetime.now().strftime('transformations_%Y-%m-%d_%H-%M-%S')
+    marker_data = {}
+
+    start = time.time()
     
     while True:
         ret, frame = video.read()
         if not ret:
             break
         # stop stopwatch
-        end = time.perf_counter()
+        end = time.time()
         timestamp = end - start
 
-        output = pose_estimation(frame, aruco_dict_type, k, d, marker_length, filename, timestamp)
+        output, marker_data = pose_estimation(frame, aruco_dict_type, k, d, marker_length, marker_data, timestamp)
 
         cv2.imshow('Estimated Pose', output)
 
