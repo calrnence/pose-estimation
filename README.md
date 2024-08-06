@@ -36,7 +36,7 @@ python generate_arucoTags.py --id {INTEGER} --type {STRING} --size {INTEGER}
 python generate_arucoTags.py --id 24 --type DICT_5X5_100 -o tags/
 
 ### PARAMETERS:
--i, --id | (REQUIRED)  id of ArUco tag to generate
+-i, --id | (REQUIRED) id of ArUco tag to generate
 -t, --type | type of ArUco tag to generate, see utils.py for full dictionary (default='DICT_ARUCO_ORIGINAL')
 -s, --size | size of ArUco tag to generate (default=200)
 
@@ -167,7 +167,7 @@ python pose_estimation.py --K_Matrix calibration_matrix.npy --D_Coeff distortion
 
 ### PARAMETERS:
 -k, --K_Matrix | (REQUIRED) path to intrinsic camera matrix numpy file
--d, --D_Coeff | (REQUIRED)  path to distortion matrix numpy file
+-d, --D_Coeff | (REQUIRED) path to distortion matrix numpy file
 -t, --type | type of ArUco tag to detect, see utils.py for full dictionary (default='DICT_ARUCO_ORIGINAL')
 -l, --length | length of one ArUco tag (default=0.015)
 
