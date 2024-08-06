@@ -6,11 +6,10 @@ python pose_estimation.py --K_Matrix calibration_matrix.npy --D_Coeff distortion
 import numpy as np
 import cv2
 import sys
-from utils import ARUCO_DICT, displayid, save_data, setup_hdf5
+from utils import ARUCO_DICT, displayid
 import argparse
 import time
 from datetime import datetime
-import csv
 import pandas as pd
 
 
@@ -48,8 +47,10 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
             ret, rvec, tvec = cv2.solvePnP(objPoints, corners[i], matrix_coefficients, distortion_coefficients, flags=cv2.SOLVEPNP_ITERATIVE)
             if ret:
                 rvec, tvec, = cv2.solvePnPRefineLM(objPoints, corners[i], matrix_coefficients, distortion_coefficients, rvec, tvec) # pose refinement step, optional
+                rvec, tvec = rvec.flatten(), tvec.flatten()
+
                 if marker_id not in marker_data.keys():
-                    marker_data[marker_id] = [timestamp, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2]]
+                    marker_data[marker_id] = [[timestamp, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2],'']]
                 else:
                     marker_data[marker_id].append([timestamp, rvec[0], rvec[1], rvec[2], tvec[0], tvec[1], tvec[2]])
                 # Draw a square around the markers
@@ -60,10 +61,11 @@ def pose_estimation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
     return frame, marker_data
 
 def save_data(filename, marker_data):
-    dfs = {}
     for marker in marker_data.keys():
-        merged_df = pd.concat(dfs.values(), axis=1)
-
+        marker_data[marker] = pd.DataFrame(marker_data[marker], columns=['timestamp','yaw','pitch','roll','x','y','z',''])
+    merged_df = pd.concat(marker_data.values(), axis=1, keys=marker_data.keys())
+    merged_df.to_csv(filename+'.csv', index=False, header=marker_data.keys())
+        
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-k", "--K_Matrix", required=True, help="Path to calibration matrix (numpy file)")
@@ -91,7 +93,8 @@ if __name__ == '__main__':
     marker_data = {}
 
     start = time.time()
-    
+    print(f"Start time: {datetime.fromtimestamp(start)}")
+
     while True:
         ret, frame = video.read()
         if not ret:
@@ -107,6 +110,8 @@ if __name__ == '__main__':
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
-
-    video.release()
+    
+    print(f"End time: {datetime.fromtimestamp(end)}")
+    video.release()    
     cv2.destroyAllWindows()
+    save_data(filename, marker_data)
