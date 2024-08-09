@@ -1,4 +1,4 @@
-Marker generation codes were taken from https://github.com/ddelago/Aruco-Marker-Calibration-and-Pose-Estimation
+Marker generation codes were taken from https://github.com/ddelago/Aruco-Marker-Calibration-and-Pose-Estimation\
 Calibration and pose estimation codes were taken from https://github.com/GSNCodes/ArUCo-Markers-Pose-Estimation-Generation-Python
 
 # Overview
@@ -67,7 +67,7 @@ python generate_arucoGrid.py --type {STRING} --width {INTEGER} --height {INTEGER
 python generate_arucoGrid.py --type DICT_5X5_50
 
 ### PARAMETERS:
--t, --type | type of ArUco tag to generate, see utils.py for full dictionary (default='DICT_ARUCO_ORIGINAL')\ 
+-t, --type | type of ArUco tag to generate, see utils.py for full dictionary (default='DICT_ARUCO_ORIGINAL')\
 -w, --width | number of ArUco tags along width of the grid (default=3)\
 -y, --height | number of ArUco tags along height of the grid (default=4)\
 -l, --length | length of ArUco tags in meters (default=0.1)\
